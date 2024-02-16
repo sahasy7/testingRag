@@ -4,7 +4,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.document_loaders import TextLoader
 
 def load_data():
-        loader = TextLoader("/content/data/GSM Mall Update Q&A.txt")
+        loader = TextLoader("data/GSM Mall Update Q&A.txt")
         documents = loader.load()
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
         texts = text_splitter.split_documents(documents)
