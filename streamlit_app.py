@@ -10,7 +10,7 @@ def load_data():
         texts = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings()
         db = FAISS.from_documents(texts, embeddings)
-         print("data is loaded")
+        print("data is loaded")
         return db
 
 vectore_store = load_data()
