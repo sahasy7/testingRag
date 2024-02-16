@@ -1,7 +1,10 @@
+import streamlit as st
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.document_loaders import TextLoader
+import os 
+os.environ['OPENAI_API_KEY'] =st.secrets.openai_key
 
 def load_data():
         loader = TextLoader("data/GSM Mall Update Q&A.txt")
