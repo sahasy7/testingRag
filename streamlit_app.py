@@ -18,3 +18,7 @@ def load_data():
 
 vectore_store = load_data()
 dr = vectore_store.as_retriever()
+if dr :
+        st.title("Sheraton-Bot")
+else:
+        print("something went wrong")
