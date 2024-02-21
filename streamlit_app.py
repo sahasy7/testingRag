@@ -1,24 +1,45 @@
-import streamlit as st
-from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.document_loaders import TextLoader
-import os 
-os.environ['OPENAI_API_KEY'] =st.secrets.openai_key
+from fastapi import FastAPI, HTTPException
+from pinecone import Pinecone
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_pinecone import Pinecone as pa
+from langchain.chains import RetrievalQA
+import os
 
-def load_data():
-        loader = TextLoader("data/GSM Mall Update Q&A.txt")
-        documents = loader.load()
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-        texts = text_splitter.split_documents(documents)
-        embeddings = OpenAIEmbeddings()
-        db = FAISS.from_documents(texts, embeddings)
-        print("data is loaded")
-        return db
+app = FastAPI()
 
-vectore_store = load_data()
-dr = vectore_store.as_retriever()
-if dr :
-        st.title("Sheraton-Bot")
-else:
-        st.title("nothing we can doo")
+# Initialize Pinecone client
+pc = Pinecone(api_key=os.environ['PINECONE_API_KEY'])
+indices = pc.Index("gsm-demo1")
+
+# Initialize OpenAIEmbeddings
+os.environ['OPENAI_API_KEY'] = os.environ['openai']
+embed = OpenAIEmbeddings(model="text-embedding-ada-002")
+
+# Initialize Pinecone as vector store
+text_field = "text"
+vectorstore = pa(indices, embed, text_field)
+
+# Initialize ChatOpenAI
+llm = ChatOpenAI(openai_api_key=os.environ['openai'],
+                 model_name='gpt-3.5-turbo',
+                 temperature=0.0)
+
+# Initialize RetrievalQA
+qa = RetrievalQA.from_chain_type(llm=llm,
+                                 chain_type="stuff",
+                                 retriever=vectorstore.as_retriever())
+
+
+@app.get("/answer")
+async def get_answer(query: str):
+  try:
+    # Invoke the query and return the answer
+    ans = qa.invoke(query)
+    return {"answer": ans["result"]}
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health")
+async def health():
+  return {"status": "ok"}
