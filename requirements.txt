@@ -1,8 +1,6 @@
-streamlit
-openai
-langchain 
-langchain-community 
-langchainhub 
-langchain-openai 
-faiss-cpu
-
+langchain==0.1.8
+openai==1.12.0
+fastapi
+langchain-openai
+langchain-community==0.0.21
+pinecone-client==3.0.3
